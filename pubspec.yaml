@@ -12,6 +12,12 @@ dependencies:
     sdk: flutter
   flutter_local_notifications: ^14.1.0
   timezone: ^0.9.2
+  syncfusion_flutter_gauges: ^18.2.44
+  path_provider: ^2.0.15
+  camera: ^0.10.5+2
+  path:
+  shared_preferences: ^2.1.0
+  image_picker: ^0.8.7+5
 
 dev_dependencies:
   flutter_test:
