@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:todo/globals.dart';
 import 'package:todo/screens/picture.dart';
+import 'package:todo/utils/shared_pref_helper.dart';
 
 class Page75 extends StatefulWidget {
   const Page75({super.key});
@@ -13,12 +15,39 @@ class Page75 extends StatefulWidget {
 }
 
 class _Page75State extends State<Page75> {
-  bool waterGoal = false;
-  bool readinGoal = false;
-  bool photoGoal = false;
-  List<bool> exersieList = [false, false];
-  List<bool> dietList = [false, false, false, false];
-  int waterDrank = 0;
+  SharedPreferenceService sharedPreferenceService = SharedPreferenceService();
+
+  @override
+  void initState() {
+    // super.initState();
+    setState(() {
+      sharedPreferenceService
+          .getIntVal("streak")
+          .then((value) => streak = value);
+      sharedPreferenceService
+          .getIntVal("waterGoal")
+          .then((value) => waterGoal = value == 1);
+      sharedPreferenceService
+          .getIntVal("waterDrank")
+          .then((value) => waterDrank = value);
+      sharedPreferenceService
+          .getIntVal("readingGoal")
+          .then((value) => readingGoal = value == 1);
+      sharedPreferenceService
+          .getIntVal("photoGoal")
+          .then((value) => photoGoal = value == 1);
+      sharedPreferenceService.getStringVal("dietGoal").then((value) {
+        dietList[0] = value[0] == '1';
+        dietList[1] = value[1] == '1';
+        dietList[2] = value[2] == '1';
+        dietList[3] = value[3] == '1';
+      });
+      sharedPreferenceService.getStringVal("exersiseGoal").then((value) {
+        exersieList[0] = value[0] == '1';
+        exersieList[1] = value[1] == '1';
+      });
+    });
+  }
 
   getGauge(int val, int total, int heightVal) {
     return Container(
@@ -32,7 +61,7 @@ class _Page75State extends State<Page75> {
           axisLineStyle: AxisLineStyle(
             thickness: 0.15,
             cornerStyle: CornerStyle.bothCurve,
-            color: Color.fromARGB(30, 0, 169, 181),
+            color: const Color.fromARGB(30, 0, 169, 181),
             thicknessUnit: GaugeSizeUnit.factor,
           ),
           annotations: <GaugeAnnotation>[
@@ -41,7 +70,8 @@ class _Page75State extends State<Page75> {
                 angle: 90,
                 widget: Text(
                   '$val / $total',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w400),
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.w400),
                 ))
           ],
           pointers: <GaugePointer>[
@@ -66,6 +96,37 @@ class _Page75State extends State<Page75> {
     );
   }
 
+  getSuccessIcon() {
+    return const Icon(
+      Icons.done,
+      color: Colors.green,
+    );
+  }
+
+  allGoalsAcheved() {
+    if (waterGoal &&
+        readingGoal &&
+        getTrailingIconFromLIst(dietList) == getSuccessIcon() &&
+        getTrailingIconFromLIst(exersieList) == getSuccessIcon()) {
+      return true;
+    }
+    return false;
+  }
+
+  getProgressState() {
+    String text = allGoalsAcheved() ? "TODAY'S GOAL COMPLTED" : "IN PROGRESS";
+    Color colorValue = allGoalsAcheved() ? Colors.green : Colors.amber;
+    return Container(
+      margin: const EdgeInsets.only(top: 10, bottom: 10),
+      alignment: Alignment.center,
+      child: Text(
+        text,
+        style: TextStyle(
+            fontSize: 20, fontWeight: FontWeight.bold, color: colorValue),
+      ),
+    );
+  }
+
   getTrailingIconFromLIst(boolList) {
     int done = 0;
     int total = boolList.length;
@@ -79,10 +140,7 @@ class _Page75State extends State<Page75> {
 
   getTrailingIcon(int done, int total) {
     if (done >= total) {
-      return const Icon(
-        Icons.done,
-        color: Colors.green,
-      );
+      return getSuccessIcon();
     }
     return Container(
       width: 25,
@@ -107,6 +165,7 @@ class _Page75State extends State<Page75> {
             onChanged: (bool? value) {
               setState(() {
                 exersieList[0] = value!;
+                exersiseGoal.replaceRange(0, 1, exersieList[0] ? '1' : '0');
               });
             },
             title: const Text('Exersise 1')),
@@ -115,6 +174,7 @@ class _Page75State extends State<Page75> {
           onChanged: (bool? value) {
             setState(() {
               exersieList[1] = value!;
+              exersiseGoal.replaceRange(1, 2, exersieList[1] ? '1' : '0');
             });
           },
           title: const Text('Exersise 2'),
@@ -135,6 +195,7 @@ class _Page75State extends State<Page75> {
             onChanged: (bool? value) {
               setState(() {
                 dietList[0] = value!;
+                dietGoal.replaceRange(0, 1, dietList[0] ? '1' : '0');
               });
             },
             title: const Text('Good Breakfast')),
@@ -143,6 +204,7 @@ class _Page75State extends State<Page75> {
             onChanged: (bool? value) {
               setState(() {
                 dietList[1] = value!;
+                dietGoal.replaceRange(1, 2, dietList[1] ? '1' : '0');
               });
             },
             title: const Text('Healthy Lunch')),
@@ -151,6 +213,7 @@ class _Page75State extends State<Page75> {
             onChanged: (bool? value) {
               setState(() {
                 dietList[2] = value!;
+                dietGoal.replaceRange(2, 3, dietList[2] ? '1' : '0');
               });
             },
             title: const Text('Dry Fruits & Milk Snacks')),
@@ -159,6 +222,7 @@ class _Page75State extends State<Page75> {
             onChanged: (bool? value) {
               setState(() {
                 dietList[3] = value!;
+                dietGoal.replaceRange(3, 4, dietList[3] ? '1' : '0');
               });
             },
             title: const Text('4 Eggs')),
@@ -174,12 +238,14 @@ class _Page75State extends State<Page75> {
       trailing: getTrailingIcon(waterDrank, 8),
       children: <Widget>[
         ListTile(
-          title: Text("Add 250ml Water"),
+          title: const Text("Add 250ml Water"),
           trailing: IconButton(
-            icon: Icon(Icons.water_drop_rounded),
+            icon: const Icon(Icons.water_drop_rounded),
             onPressed: () {
               setState(() {
-                if (waterDrank < 8) waterDrank++;
+                if (waterDrank < 8) {
+                  waterDrank++;
+                }
               });
             },
           ),
@@ -190,8 +256,9 @@ class _Page75State extends State<Page75> {
             setState(() {
               if (value == true) {
                 waterDrank = 8;
-              }
+              } 
               waterGoal = value!;
+              sharedPreferenceService.updateIntVal("waterDrank", waterDrank);
             });
           },
           title: const Text('4L Completed'),
@@ -205,13 +272,13 @@ class _Page75State extends State<Page75> {
       title: const Text('Book Reading'),
       subtitle: const Text('Read 10 Pages of Non-fiction'),
       controlAffinity: ListTileControlAffinity.leading,
-      trailing: getTrailingIconFromLIst([readinGoal]),
+      trailing: getTrailingIconFromLIst([readingGoal]),
       children: <Widget>[
         CheckboxListTile(
-          value: readinGoal,
+          value: readingGoal,
           onChanged: (bool? value) {
             setState(() {
-              readinGoal = value!;
+              readingGoal = value!;
             });
           },
           title: const Text('Read 10 pages'),
@@ -227,32 +294,36 @@ class _Page75State extends State<Page75> {
       controlAffinity: ListTileControlAffinity.leading,
       trailing: getTrailingIconFromLIst([photoGoal]),
       children: <Widget>[
-        IconButton(
-            onPressed: () async {
-              WidgetsFlutterBinding.ensureInitialized();
-              final cameras = await availableCameras();
-              final firstCamera = cameras.first;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TakePictureScreen(
-                    camera: firstCamera,
+        ListTile(
+          title: const Text("Save Photo"),
+          trailing: IconButton(
+              onPressed: () async {
+                WidgetsFlutterBinding.ensureInitialized();
+                final cameras = await availableCameras();
+                final firstCamera = cameras.first;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TakePictureScreen(
+                      camera: firstCamera,
+                    ),
                   ),
-                ),
-              );
-            },
-            icon: Icon(Icons.camera)),
-        CheckboxListTile(
-          value: photoGoal,
-          onChanged: (bool? value) {
-            setState(() {
-              photoGoal = value!;
-            });
-          },
-          title: const Text('Save Photo'),
+                );
+              },
+              icon: Icon(Icons.camera)),
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    sharedPreferenceService.updateStringVal("exersiseGoal", exersiseGoal);
+    sharedPreferenceService.updateIntVal("waterGoal", waterGoal ? 1 : 0);
+    sharedPreferenceService.updateIntVal("readingGoal", readingGoal ? 1 : 0);
+    sharedPreferenceService.updateIntVal("waterDrank", waterDrank);
+    sharedPreferenceService.updateStringVal("dietGoal", dietGoal);
+    super.dispose();
   }
 
   @override
@@ -262,25 +333,17 @@ class _Page75State extends State<Page75> {
       child: Container(
         child: Column(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            getGauge(6, 75, 180),
+            getGauge(streak, 75, 180),
             getDivider(),
+            getProgressState(),
             getExersiseItem(),
             getDietItem(),
             getWaterItem(),
             getReadItem(),
             getPhotoItem()
-            // Checkbox(
-            //   value: showvalue,
-            //   onChanged: (value) {
-            //     setState(() {
-            //       showvalue = value!;
-            //       checkboxValue1 = value;
-            //     });
-            //   },
-            // ),
           ],
         ),
       ),

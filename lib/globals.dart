@@ -1,0 +1,11 @@
+int streak = 0;
+int lastGoalTime = 19497; // 20 May 2023 -> 19497
+bool waterGoal = false;
+bool readingGoal = false;
+bool photoGoal = false;
+List<bool> exersieList = [false, false];
+List<bool> dietList = [false, false, false, false];
+List<String> photoList = [];
+int waterDrank = 0;
+String exersiseGoal = "00";
+String dietGoal = "0000";
